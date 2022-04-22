@@ -5,6 +5,8 @@ using UnityEngine;
 public class PlayerController : MonoBehaviour
 {
     public float moveSpeed;
+    public LayerMask solidObjectsLayer;
+    public LayerMask grassLayer;
 
     private bool isMoving;
     private Vector2 input;
@@ -37,7 +39,11 @@ public class PlayerController : MonoBehaviour
                 targetPos.x += input.x;
                 targetPos.y += input.y;
 
-                StartCoroutine(Move(targetPos));
+                if (IsWalkable(new Vector3(targetPos.x, targetPos.y - .5f)))
+                {
+                    isMoving = true;
+                    StartCoroutine(Move(targetPos));
+                }
             }
         }
 
@@ -54,5 +60,23 @@ public class PlayerController : MonoBehaviour
         }
         transform.position = targetPos;
         isMoving = false;
+
+        CheckForEncounters();
+    }
+
+    private bool IsWalkable(Vector3 targetPos)
+    {
+        return Physics2D.OverlapCircle(targetPos, 0.3f, solidObjectsLayer) == null;
+    }
+
+    private void CheckForEncounters()
+    {
+        if (Physics2D.OverlapCircle(transform.position, 0.3f, grassLayer) != null)
+        {
+            if (Random.Range(1, 101) <= 10)
+            {
+                Debug.Log("Encountered a wild pokemon");
+            }
+        }
     }
 }
