@@ -55,4 +55,49 @@ public class Pokemon
     public int MaxHp {
         get { return Mathf.FloorToInt(Base.Speed * Level / 100f) + 10; }
     }
+
+    public DamageDetails TakeDamage(Move move, Pokemon attacker)
+    {
+        float critical = 1f;
+        if (Random.value * 100f <= 6.25)
+        {
+            critical = 2f;
+        }
+
+        float type = TypeChart.GetEffectiveness(move.Base.Type, Base.Type1) * TypeChart.GetEffectiveness(move.Base.Type, Base.Type2);
+
+        var damageDetails = new DamageDetails()
+        {
+            TypeEffectiveness = type,
+            Critical = critical,
+            Fainted = false
+        };
+
+        float modifier = Random.Range(.85f, 1f) * type * critical;
+        float a = (2 * attacker.Level + 10) / 250f;
+        float d = a * move.Base.Power * ((float) attacker.Attack / Defense) + 2;
+        int damage = Mathf.FloorToInt(d * modifier);
+
+        HP -= damage;
+        if (HP <= 0)
+        {
+            HP = 0;
+            damageDetails.Fainted = true;
+        }
+
+        return damageDetails;
+    }
+
+    public Move GetRandomMove()
+    {
+        int r = Random.Range(0, Moves.Count);
+        return Moves[r];
+    }
+}
+
+public class DamageDetails
+{
+    public bool Fainted { get; set; }
+    public float Critical { get; set; }
+    public float TypeEffectiveness { get; set; }
 }
